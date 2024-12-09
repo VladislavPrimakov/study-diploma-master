@@ -6,10 +6,10 @@ class EmbeddingNet(nn.Module):
     def __init__(self, in_channels):
         super(EmbeddingNet, self).__init__()
         self.convnet = nn.Sequential(nn.Conv2d(in_channels, 32, 5),
-                                     nn.PReLU(),
+                                     nn.ReLU(inplace=True),
                                      nn.MaxPool2d(2, stride=2),
                                      nn.Conv2d(32, 64, 5),
-                                     nn.PReLU(),
+                                     nn.ReLU(inplace=True),
                                      nn.MaxPool2d(2, stride=2))
 
         self.fc = nn.Sequential(nn.Linear(1024, 256),
