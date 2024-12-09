@@ -5,13 +5,13 @@ from torchvision import datasets
 import torch, numpy as np
 
 
-class BaseMNISTDataset(Dataset):
+class DatasetMNISTBase(Dataset):
     def __init__(self, root, split, download=False):
         super().__init__()
         self.split = split
         self.transform = T.ToDtype(torch.float, scale=True)
         self.dataset = datasets.MNIST(root, train=(split == "train"), download=download)
-        self.data = self.dataset.data.unsqueeze(1).clone()  # Добавляем канал (1 для серых изображений)
+        self.data = self.dataset.data.unsqueeze(1).clone()
         np_arr = np.array(self.dataset.targets.clone())
         self.list_classes = np.unique(np_arr)
         self.grouped_examples = {i: np.where(np_arr == i)[0] for i in self.list_classes}
@@ -24,7 +24,7 @@ class BaseMNISTDataset(Dataset):
         return image, self.dataset[index][1]
         
 
-class DatasetMNISTPair(BaseMNISTDataset):
+class DatasetMNISTPair(DatasetMNISTBase):
     def __init__(self, root, split, download=False):
         super().__init__(root, split, download)
 
@@ -50,7 +50,7 @@ class DatasetMNISTPair(BaseMNISTDataset):
         return image_1, image_2, target
 
 
-class DatasetMNISTTriplet(BaseMNISTDataset):
+class DatasetMNISTTriplet(DatasetMNISTBase):
     def __init__(self, root, split, download=False):
         super().__init__(root, split, download)
 
@@ -72,7 +72,7 @@ class DatasetMNISTTriplet(BaseMNISTDataset):
         return anchor, positive, negative
 
 
-class DatasetMNISTConvolutional(BaseMNISTDataset):
+class DatasetMNISTConvolutional(DatasetMNISTBase):
     def __init__(self, root, split, download=False):
         super().__init__(root, split, download)
 

@@ -3,7 +3,7 @@ import argparse
 import torch.nn
 import torch.optim as optim
 from torch.optim.lr_scheduler import StepLR
-from datasets import BaseMNISTDataset, DatasetMNISTTriplet
+from datasets import DatasetMNISTBase, DatasetMNISTTriplet
 from networks import EmbeddingNet
 from utils import fit, TypeModel
 from losses import OnlineTripletLoss, AccuracyEmbeddingTriplet
@@ -18,7 +18,7 @@ def main():
     parser.add_argument("--seed", type=int, default=1, metavar="S", help="Random seed (default: 1)")
     args = parser.parse_args()
 
-    train_dataset = BaseMNISTDataset("datasets", "train", download=True)
+    train_dataset = DatasetMNISTBase("datasets", "train", download=True)
     test_dataset = DatasetMNISTTriplet("datasets", "test", download=True)
 
     model_name = "SiameseNetwork__Conv_Online_Triplet_Hard_Negative_MNIST"

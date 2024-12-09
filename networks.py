@@ -38,12 +38,12 @@ class ConvolutionalNet(nn.Module):
             nn.MaxPool2d(2, stride=2)
         )
         self.fc = nn.Sequential(
-            nn.Linear(64 * 4 * 4, 256),
+            nn.Linear(1024, 256),
             nn.ReLU(inplace=True),
-            nn.Linear(256, 128),
+            nn.Linear(256, 256),
             nn.ReLU(inplace=True),
-            nn.Linear(128, num_classes),
-            nn.Softmax()
+            nn.Linear(256, num_classes),
+            nn.Softmax(dim=1)
         )
 
     def forward(self, input1):
@@ -65,11 +65,12 @@ class SiameseNetSigmoid(nn.Module):
         self.fc = nn.Sequential(
             nn.Linear(1024 * 2, 256),
             nn.ReLU(inplace=True),
-            nn.Linear(256, 128),
+            nn.Linear(256, 256),
             nn.ReLU(inplace=True),
-            nn.Linear(128, 1),
+            nn.Linear(256, 1),
             nn.Sigmoid()
         )
+
 
     def forward(self, input1, input2):
         output1 = self.convnet(input1)

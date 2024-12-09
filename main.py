@@ -1,4 +1,7 @@
-from networks import EmbeddingNet, SiameseNetSigmoid
+from networks import EmbeddingNet, ConvolutionalNet
 import torch
+from torch import nn
 
-torch.onnx.export(SiameseNetSigmoid(1), torch.randn(2, 1, 28, 28) , "model.onnx", input_names=["MNIST"], output_names=["Embedding"])
+
+
+torch.onnx.export(ConvolutionalNet(1, 10), torch.randn(1, 1, 28, 28) , "model.onnx", input_names=["MNIST"], output_names=["Class probabilities"])

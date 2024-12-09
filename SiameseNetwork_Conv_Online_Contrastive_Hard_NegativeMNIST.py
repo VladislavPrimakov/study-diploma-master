@@ -2,7 +2,7 @@ import argparse
 from functools import partial
 import torch.optim as optim
 from torch.optim.lr_scheduler import StepLR
-from datasets import BaseMNISTDataset, DatasetMNISTPair
+from datasets import DatasetMNISTBase, DatasetMNISTPair
 from networks import EmbeddingNet
 from utils import fit, TypeModel
 from losses import OnlineContrastiveLoss, ContrastiveLoss, AccuracyEmbeddingPair
@@ -17,7 +17,7 @@ def main():
     parser.add_argument("--seed", type=int, default=1, metavar="S", help="Random seed (default: 1)")
     args = parser.parse_args()
 
-    train_dataset = BaseMNISTDataset("datasets", "train")
+    train_dataset = DatasetMNISTBase("datasets", "train")
     test_dataset = DatasetMNISTPair("datasets", "test")
 
     model_name = "SiameseNetwork_Conv_Online_Contrastive_Hard_Negative_MNIST"
