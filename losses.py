@@ -4,7 +4,7 @@ import torch.nn.functional as F
 
 
 class ContrastiveLoss(nn.Module):
-    def __init__(self, margin, reduction="mean"):
+    def __init__(self, margin=1, reduction="mean"):
         super(ContrastiveLoss, self).__init__()
         self.margin = margin
         self.reduction = reduction
@@ -25,9 +25,6 @@ class OnlineContrastiveLoss(nn.Module):
 
     def forward(self, embeddings, targets):
         positive_pairs, negative_pairs, accuracy = self._hardNegativePairSelector(embeddings, targets)
-        if embeddings.is_cuda:
-            positive_pairs = positive_pairs.cuda()
-            negative_pairs = negative_pairs.cuda()
         positive_loss = (embeddings[positive_pairs[:, 0]] - embeddings[positive_pairs[:, 1]]).pow(2).sum(1)
         negative_loss = F.relu(self.margin - (embeddings[negative_pairs[:, 0]] - embeddings[negative_pairs[:, 1]]).pow(2).sum(1).sqrt()).pow(2)
         loss = torch.cat([positive_loss, negative_loss], dim=0)

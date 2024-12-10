@@ -48,7 +48,7 @@ class TypeModel(Enum):
     Online = auto()
 
 
-def loss_model(model, type_model, data, loss_fn, accuracy_fn=None, stage=None):
+def networks_model(model, type_model, data, loss_fn, accuracy_fn=None, stage=None):
     match type_model:
         case TypeModel.Conv:
             input1, input2, target1, target2 = data[0], data[1], data[2], data[3]
@@ -91,7 +91,7 @@ def train(model, type_model, device, train_loader, optimizer, loss_fn, epoch, ac
     for data in train_tqdm:
         data = [x.to(device) for x in data]
         optimizer.zero_grad()
-        loss, accuracy = loss_model(model, type_model, data, loss_fn, accuracy_fn=accuracy_fn)
+        loss, accuracy = networks_model(model, type_model, data, loss_fn, accuracy_fn=accuracy_fn)
         train_accuracy += accuracy
         train_loss += loss.item()
         loss.backward()
@@ -108,7 +108,7 @@ def test(model, type_model, device, test_loader, loss_fn, accuracy_fn=None):
     with torch.no_grad():
         for data in test_loader:
             data = [x.to(device) for x in data]
-            loss, accuracy = loss_model(model, type_model, data, loss_fn, accuracy_fn=accuracy_fn)
+            loss, accuracy = networks_model(model, type_model, data, loss_fn, accuracy_fn=accuracy_fn)
             test_accuracy += accuracy
             test_loss += loss.item()
     test_accuracy = test_accuracy / l
