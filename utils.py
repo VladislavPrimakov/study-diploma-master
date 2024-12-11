@@ -1,13 +1,19 @@
-import torch, os
+import torch, os, random
 from sampler import BalancedBatchSampler
 from tqdm import tqdm
 from enum import Enum, auto
 from matplotlib import pyplot as plt
+import numpy as np
 
 
 def fit(train_dataset, test_dataset, model, train_type_model, test_type_model, train_loss_fn, test_loss_fn, optimizer, scheduler, epochs, seed, train_batch_size, test_batch_size,
         model_name, balanced_sampler=False, train_accuracy_fn=None, test_accuracy_fn=None):
     torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+    np.random.seed(seed)
+    random.seed(seed)
     use_cuda = torch.cuda.is_available()
     if use_cuda:
         device = torch.device("cuda")
@@ -48,7 +54,7 @@ class TypeModel(Enum):
     Online = auto()
 
 
-def networks_model(model, type_model, data, loss_fn, accuracy_fn=None, stage=None):
+def networks_model(model, type_model, type_fit, data, loss_fn, accuracy_fn=None, stage=None):
     match type_model:
         case TypeModel.Conv:
             input1, input2, target1, target2 = data[0], data[1], data[2], data[3]
@@ -60,15 +66,13 @@ def networks_model(model, type_model, data, loss_fn, accuracy_fn=None, stage=Non
             input1, input2, target = data[0], data[1], data[2]
             output1 = model(input1)
             output2 = model(input2)
-            loss = loss_fn(output1, output2, target)
-            accuracy = accuracy_fn(output1, output2, target)
+            loss, accuracy = loss_fn(type_fit, output1, output2, target)
         case TypeModel.Triplet:
             input1, input2, input3 = data[0], data[1], data[2]
             output1 = model(input1)
             output2 = model(input2)
             output3 = model(input3)
-            loss = loss_fn(output1, output2, output3)
-            accuracy = accuracy_fn(output1, output2, output3)
+            loss, accuracy = loss_fn(type_fit, output1, output2, output3)
         case TypeModel.Sigma:
             input1, input2, target = data[0], data[1], data[2]
             output = model(input1, input2).squeeze(1)
@@ -91,7 +95,7 @@ def train(model, type_model, device, train_loader, optimizer, loss_fn, epoch, ac
     for data in train_tqdm:
         data = [x.to(device) for x in data]
         optimizer.zero_grad()
-        loss, accuracy = networks_model(model, type_model, data, loss_fn, accuracy_fn=accuracy_fn)
+        loss, accuracy = networks_model(model, type_model, "train", data, loss_fn, accuracy_fn=accuracy_fn)
         train_accuracy += accuracy
         train_loss += loss.item()
         loss.backward()
@@ -108,7 +112,7 @@ def test(model, type_model, device, test_loader, loss_fn, accuracy_fn=None):
     with torch.no_grad():
         for data in test_loader:
             data = [x.to(device) for x in data]
-            loss, accuracy = networks_model(model, type_model, data, loss_fn, accuracy_fn=accuracy_fn)
+            loss, accuracy = networks_model(model, type_model, "test", data, loss_fn, accuracy_fn=accuracy_fn)
             test_accuracy += accuracy
             test_loss += loss.item()
     test_accuracy = test_accuracy / l

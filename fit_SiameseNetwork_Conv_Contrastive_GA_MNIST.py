@@ -1,15 +1,14 @@
 import argparse
-from functools import partial
 import torch.optim as optim
 from torch.optim.lr_scheduler import StepLR
-from datasets import DatasetMNISTBase, DatasetMNISTPair
+from datasets import DatasetMNISTPair
 from networks import EmbeddingNet
 from utils import fit, TypeModel
-from losses import OnlineContrastiveLoss, ContrastiveLoss, AccuracyEmbeddingPair
+from losses import ContrastiveLoss
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Siamese Network with Online Contrastive (Hard Negative) based on ConvNet")
+    parser = argparse.ArgumentParser(description="Siamese Network with Contrastive and GA based on ConvNet")
     parser.add_argument("--train-batch-size", type=int, default=64, metavar="B", help="Batch size for training (default: 64)")
     parser.add_argument("--test-batch-size", type=int, default=64, metavar="B", help="Batch size for testing (default: 64)")
     parser.add_argument("--epochs", type=int, default=20, metavar="E", help="Number of epochs to train (default: 20)")
@@ -17,31 +16,29 @@ def main():
     parser.add_argument("--seed", type=int, default=1, metavar="S", help="Random seed (default: 1)")
     args = parser.parse_args()
 
-    train_dataset = DatasetMNISTBase("datasets", "train")
+    train_dataset = DatasetMNISTPair("datasets", "train")
     test_dataset = DatasetMNISTPair("datasets", "test")
 
-    model_name = "SiameseNetwork_Conv_Online_Contrastive_Hard_Negative_MNIST"
+    model_name = "SiameseNetwork_Conv_Contrastive_GA_MNIST"
     model = EmbeddingNet(1)
-    train_loss_fn = OnlineContrastiveLoss(reduction="sum")
-    test_loss_fn = ContrastiveLoss(reduction="sum")
+    loss_fn = ContrastiveLoss(useGA=True, reduction="sum")
     optimizer = optim.Adam(model.parameters())
     scheduler = StepLR(optimizer, step_size=2, gamma=args.gamma)
 
     fit(train_dataset=train_dataset,
         test_dataset=test_dataset,
         model=model,
-        train_type_model=TypeModel.Online,
+        train_type_model=TypeModel.Pairs,
         test_type_model=TypeModel.Pairs,
         optimizer=optimizer,
-        train_loss_fn=train_loss_fn,
-        test_loss_fn=test_loss_fn,
+        train_loss_fn=loss_fn,
+        test_loss_fn=loss_fn,
         scheduler=scheduler,
         seed=args.seed,
         epochs=args.epochs,
         train_batch_size=args.train_batch_size,
         test_batch_size=args.test_batch_size,
-        model_name=model_name,
-        balanced_sampler=True)
+        model_name=model_name)
 
 
 if __name__ == '__main__':

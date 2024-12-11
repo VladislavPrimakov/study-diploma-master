@@ -22,8 +22,7 @@ def main():
 
     model_name = "SiameseNetwork_Conv_Contrastive_MNIST"
     model = EmbeddingNet(1)
-    loss_fn = ContrastiveLoss(margin=1, reduction="sum")
-    accuracy_fn = partial(AccuracyEmbeddingPair, threshold=0.7)
+    loss_fn = ContrastiveLoss(reduction="sum")
     optimizer = optim.Adam(model.parameters())
     scheduler = StepLR(optimizer, step_size=2, gamma=args.gamma)
 
@@ -40,9 +39,7 @@ def main():
         epochs=args.epochs,
         train_batch_size=args.train_batch_size,
         test_batch_size=args.test_batch_size,
-        model_name=model_name,
-        train_accuracy_fn=accuracy_fn,
-        test_accuracy_fn=accuracy_fn)
+        model_name=model_name)
 
 
 if __name__ == '__main__':

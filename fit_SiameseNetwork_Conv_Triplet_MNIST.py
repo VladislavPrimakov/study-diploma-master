@@ -1,10 +1,10 @@
-import argparse, torch
+import argparse
 import torch.optim as optim
 from torch.optim.lr_scheduler import StepLR
 from datasets import DatasetMNISTTriplet
 from networks import EmbeddingNet
 from utils import fit, TypeModel
-from losses import AccuracyEmbeddingTriplet
+from losses import TripletLoss
 
 
 def main():
@@ -21,7 +21,7 @@ def main():
 
     model_name = "SiameseNetwork_Conv_Triplet_MNIST"
     model = EmbeddingNet(1)
-    loss_fn = torch.nn.TripletMarginWithDistanceLoss(margin=1, reduction="sum")
+    loss_fn = TripletLoss(reduction="sum")
     optimizer = optim.Adam(model.parameters())
     scheduler = StepLR(optimizer, step_size=2, gamma=args.gamma)
 
@@ -38,9 +38,7 @@ def main():
         epochs=args.epochs,
         train_batch_size=args.train_batch_size,
         test_batch_size=args.test_batch_size,
-        model_name=model_name,
-        train_accuracy_fn=AccuracyEmbeddingTriplet,
-        test_accuracy_fn=AccuracyEmbeddingTriplet)
+        model_name=model_name)
 
 
 if __name__ == "__main__":
